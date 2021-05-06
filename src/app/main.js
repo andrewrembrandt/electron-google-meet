@@ -1,5 +1,6 @@
 const {app, BrowserWindow, shell} = require('electron');
 const path = require('path')
+const url = require('url')
 
 const menu = require('./menu.js');
 const touchbar = require('./touchbar.js');
@@ -25,7 +26,8 @@ app.on('ready', () => {
         webPreferences: {
             preload: path.join(__dirname, 'browser.js'),
             nodeIntegration: false,
-            contextIsolation: true
+            contextIsolation: true,
+            webSecurity: false
         }
     });
 
@@ -37,6 +39,12 @@ app.on('ready', () => {
     menu.init(meet);
     mainWindow.loadURL(url);
     mainWindow.setTouchBar(touchbar.init(meet));
+
+    mainWindow.webContents.on('dom-ready', () => {
+      if (url.parse(mainWindow.url).pathname != "/") {
+        window.open('file://${__dirname}/popout/index.html', '_blank', 'top=500,left=200,frame=false,nodeIntegration=no')
+      }
+    });
 
     mainWindow.on('closed', () => {
         mainWindow = null;
